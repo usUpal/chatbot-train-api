@@ -7,8 +7,18 @@ import chalk from "ansi-colors";
 import { generateRandomName } from "../utils/helpers.js";
 import fs from "fs";
 import multer from "multer";
+import path from "path";
 
 const router = express.Router();
+
+// Backend validation middleware to allow only .txt files
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "text/plain") {
+    cb(null, true);
+  } else {
+    cb(new Error("Only text files are allowed."), false);
+  }
+};
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -19,10 +29,10 @@ const storage = multer.diskStorage({
     cb(null, filename); // Unique filename
   },
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage, fileFilter: fileFilter});
 
 router.post(
-  "/create-chatbot-weavi",
+  "/create-chatbot-weavi/:userId",
   upload.array("files"),
   async (req, res) => {
     if (!req.files || req.files.length === 0) {
@@ -31,10 +41,13 @@ router.post(
     console.log(
       `file sumbitted:::: /home/luisflr/chatbot-train-api/src/routes/uploads/${req.files[0].filename}`
     );
+    const userId = req.params.userId;
+    console.log(`userid: ${userId}`);
     console.log(chalk.bgMagenta("POST /api/v1/create-chatbot-weavi"));
+
     const id = uuidv4();
-    const lastTwoDigits = id.slice(-3);
-    const name = lastTwoDigits + "_eventos";
+    const lastThreeDigit = id.slice(-3);
+    const name = lastThreeDigit + "_eventos";
     const createdDate = new Date();
     const formatedDate = moment(createdDate).format(
       "YYYY-MM-DD HH:mm:ss.SSSSSS"
@@ -50,7 +63,7 @@ router.post(
       const sql = "INSERT INTO chat_flow SET ?";
       //TODO dynaimically check results[i] for weaviate category
       // MODIFY THE FLOWDATA
-      const flowdataString = results[1].flowData;
+      const flowdataString = results[0].flowData;
       // Parse the JSON string
       const parsedJSON = JSON.parse(flowdataString);
       const indexTag = generateRandomName();
@@ -71,17 +84,43 @@ router.post(
         id: id,
         name: name,
         flowData: modifiedFlowdata,
-        deployed: results[1].deployed,
-        isPublic: results[1].isPublic,
-        apikeyid: results[1].apikeyid,
-        chatbotConfig: results[1].chatbotConfig,
+        deployed: results[0].deployed,
+        isPublic: results[0].isPublic,
+        apikeyid: results[0].apikeyid,
+        chatbotConfig: results[0].chatbotConfig,
         createdDate: formatedDate,
         updatedDate: formatedDate,
-        apiConfig: results[1].apiConfig,
-        analytic: results[1].analytic,
+        apiConfig: results[0].apiConfig,
+        analytic: results[0].analytic,
         category: modifiedCategory,
-        speechToText: results[1].speechToText,
+        speechToText: results[0].speechToText,
+        userId: userId,
       };
+      // file-length-check----------------------------
+      // if (req.files.length > 1) {
+      //   const mergedFilePath = path.join(__dirname, "uploads", "merged.txt");
+      //   const mergedFileStream = fs.createWriteStream(mergedFilePath, {
+      //     flags: "a",
+      //   });
+    
+      //   req.files.forEach((file, index) => {
+      //     filePath = path.join(__dirname, "uploads", file.filename);
+      //     const fileContent = fs.readFileSync(filePath);
+      //     mergedFileStream.write(fileContent);
+    
+      //     if (index !== req.files.length - 1) {
+      //       mergedFileStream.write("\n\n");
+      //     }
+      //   });
+    
+      //   mergedFileStream.end();
+      //   filePath = mergedFilePath; // Set filePath to the merged file path
+      // } else {
+      //   filePath = path.join(__dirname, "uploads", req.files[0].filename);
+      // }
+    
+      // console.log(filePath);
+      // ------------------------------------END-------------------------------------
       const filePath = `/home/luisflr/chatbot-train-api/src/routes/uploads/${req.files[0].filename}`;
       // UPSERT
       const formData = {
@@ -144,5 +183,6 @@ router.post(
     }
   }
 );
+
 
 export default router;

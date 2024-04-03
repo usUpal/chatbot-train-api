@@ -14,8 +14,8 @@ router.post("/create-chatbot-sys", async (req, res) => {
   const name = lastTwoDigits + "_eventos";
   const createdDate = new Date();
   const formatedDate = moment(createdDate).format("YYYY-MM-DD HH:mm:ss.SSSSSS");
-
   // console.log(`request body:${req.body.bot_text}`);
+  const systemPrompt2 = `you are a chatbot name keosbot & you will answer questions based on:  ${req.body.bot_text}; don't ans any other ques outside of this topic;"`;
   const systemPrompt =
     req.body.bot_text || "you are a chatbot name keosbot bot"; //!
   try {
@@ -59,7 +59,7 @@ router.post("/create-chatbot-sys", async (req, res) => {
     connection.query(sql, newChatFlow, (err, result) => {
       if (err) throw err;
       console.log("Chatbot created successfully ✅"); //! remove later
-      res.status(200).send({ status: 200, chatbotId: id, chatbotName: name });
+      res.status(200).send({chatbotId: id, chatbotName: name });
     });
   } catch (error) {
     console.error(error);
