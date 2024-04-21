@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
     cb(null, filename); // Unique filename
   },
 });
-const upload = multer({ storage: storage, fileFilter: fileFilter});
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 router.post(
   "/create-chatbot-weavi/:userId",
@@ -42,12 +42,13 @@ router.post(
       `file sumbitted:::: /home/luisflr/chatbot-train-api/src/routes/uploads/${req.files[0].filename}`
     );
     const userId = req.params.userId;
-    console.log(`userid: ${userId}`);
+    console.log(`userid: ${userId}`); //!remove later
     console.log(chalk.bgMagenta("POST /api/v1/create-chatbot-weavi"));
 
     const id = uuidv4();
-    const lastThreeDigit = id.slice(-3);
-    const name = lastThreeDigit + "_eventos";
+    const lastFiveDigit = id.slice(-5);
+    // const name = lastFoveDigit + "_eventos-bot";
+    const name = `eventos_bot_${lastFiveDigit}`;
     const createdDate = new Date();
     const formatedDate = moment(createdDate).format(
       "YYYY-MM-DD HH:mm:ss.SSSSSS"
@@ -57,7 +58,7 @@ router.post(
 
     try {
       const response = await axios.get(
-        "https://chatbot-train.keoscx.com/api/v1/template-chatbots"
+        "https://chatbot-train.keoscx.com/api/v1/template-chatbots-wevi"
       );
       const results = response.data;
       const sql = "INSERT INTO chat_flow SET ?";
@@ -102,31 +103,29 @@ router.post(
       //   const mergedFileStream = fs.createWriteStream(mergedFilePath, {
       //     flags: "a",
       //   });
-    
+
       //   req.files.forEach((file, index) => {
       //     filePath = path.join(__dirname, "uploads", file.filename);
       //     const fileContent = fs.readFileSync(filePath);
       //     mergedFileStream.write(fileContent);
-    
+
       //     if (index !== req.files.length - 1) {
       //       mergedFileStream.write("\n\n");
       //     }
       //   });
-    
+
       //   mergedFileStream.end();
       //   filePath = mergedFilePath; // Set filePath to the merged file path
       // } else {
       //   filePath = path.join(__dirname, "uploads", req.files[0].filename);
       // }
-    
+
       // console.log(filePath);
       // ------------------------------------END-------------------------------------
       const filePath = `/home/luisflr/chatbot-train-api/src/routes/uploads/${req.files[0].filename}`;
       // UPSERT
       const formData = {
-        files: fs.createReadStream(
-          filePath
-        ),
+        files: fs.createReadStream(filePath),
         openAIApiKey: process.env.OPENAI_API_KEY,
         stripNewLines: "true",
         batchSize: 1,
@@ -171,10 +170,10 @@ router.post(
         });
         fs.unlink(filePath, (err) => {
           if (err) {
-            console.error('Error deleting file:', err);
+            console.error("Error deleting file:", err);
             return;
           }
-          console.log('File deleted successfully');
+          console.log("File deleted successfully");
         });
       });
     } catch (error) {
@@ -183,6 +182,5 @@ router.post(
     }
   }
 );
-
 
 export default router;

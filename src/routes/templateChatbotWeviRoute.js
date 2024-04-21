@@ -3,16 +3,13 @@ import express from "express";
 import chalk from 'ansi-colors'
 const router = express.Router();
 
-router.get("/user-chatbots/:userId", (req, res) => {
-  console.log(chalk.bgMagenta("GET /api/v1/user-chatbots"));
-  const userId = req.params.userId;
-  const category = req.body.category;
-  // console.log(category);
+router.get("/template-chatbots-wevi", (req, res) => {
+  console.log(chalk.bgMagenta("GET /api/v1/template-chatbots"));
   // "SELECT * FROM chat_flow WHERE name LIKE 'weaviate-final-demo' OR name LIKE 'Merck Januvia QA' OR name LIKE 'keos-test';";
   const sql =
-    `SELECT * FROM chat_flow WHERE userId = ? AND category = ? ORDER BY createdDate DESC;`;
+    "SELECT * FROM chat_flow WHERE name LIKE 'template-chatbot-weaviate';";
   // const sql = "SELECT name, id FROM chat_flow";
-  connection.query(sql,[userId,category], (err, results) => {
+  connection.query(sql, (err, results) => {
     if (err) throw err; 
     res.send(results);
   });
