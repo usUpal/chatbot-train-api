@@ -38,12 +38,11 @@ router.post(
     if (!req.files || req.files.length === 0) {
       return res.status(400).send("No files uploaded.");
     }
-    console.log(
-      `file sumbitted:::: /home/luisflr/chatbot-train-api/src/routes/uploads/${req.files[0].filename}`
-    );
+    // console.log(
+    //   `file sumbitted:::: /home/luisflr/chatbot-train-api/src/routes/uploads/${req.files[0].filename}`
+    // );
     const userId = req.params.userId;
-    console.log(`userid: ${userId}`); //!remove later
-    console.log(chalk.bgMagenta("POST /api/v1/create-chatbot-weavi"));
+    console.log(chalk.blue(`POST /api/v1/create-chatbot-weavi ${chalk.gray(new Date().toISOString())}`));
 
     const id = uuidv4();
     const lastFiveDigit = id.slice(-5);
@@ -67,19 +66,19 @@ router.post(
       const flowdataString = results[0].flowData;
       // Parse the JSON string
       const parsedJSON = JSON.parse(flowdataString);
-      const indexTag = generateRandomName();
+      const weaviateIndex = name.charAt(0).toUpperCase() + name.slice(1);
+      const indexTag = weaviateIndex;
       // Modify the value of systemMessage
       parsedJSON.nodes.forEach((node) => {
         if (node.id === "weaviate_0") {
           // Set the desired weaviateIndex value
           node.data.inputs.weaviateIndex = indexTag;
-          console.log("Updated weaviateIndex:", node.data.inputs.weaviateIndex);
         }
       });
 
       // Convert back to JSON string with proper formatting
       const modifiedFlowdata = JSON.stringify(parsedJSON, null, 2);
-      const modifiedCategory = "weaviate";
+      const modifiedCategory = "eventos-bot-txtFile-wevi";
 
       const newChatFlow = {
         id: id,
@@ -97,31 +96,6 @@ router.post(
         speechToText: results[0].speechToText,
         userId: userId,
       };
-      // file-length-check----------------------------
-      // if (req.files.length > 1) {
-      //   const mergedFilePath = path.join(__dirname, "uploads", "merged.txt");
-      //   const mergedFileStream = fs.createWriteStream(mergedFilePath, {
-      //     flags: "a",
-      //   });
-
-      //   req.files.forEach((file, index) => {
-      //     filePath = path.join(__dirname, "uploads", file.filename);
-      //     const fileContent = fs.readFileSync(filePath);
-      //     mergedFileStream.write(fileContent);
-
-      //     if (index !== req.files.length - 1) {
-      //       mergedFileStream.write("\n\n");
-      //     }
-      //   });
-
-      //   mergedFileStream.end();
-      //   filePath = mergedFilePath; // Set filePath to the merged file path
-      // } else {
-      //   filePath = path.join(__dirname, "uploads", req.files[0].filename);
-      // }
-
-      // console.log(filePath);
-      // ------------------------------------END-------------------------------------
       const filePath = `/home/luisflr/chatbot-train-api/src/routes/uploads/${req.files[0].filename}`;
       // UPSERT
       const formData = {
@@ -142,11 +116,10 @@ router.post(
           },
         };
 
+
         try {
           const response = await axios(config);
-
-          // console.log(response.data,typeof response.status);
-          console.log({ status: response.status, data: response.data });
+          // console.log({ status: response.status, data: response.data });
           return {
             status: response.status,
             weaviateIndex: indexTag,
@@ -159,26 +132,43 @@ router.post(
 
       connection.query(sql, newChatFlow, async (err, result) => {
         if (err) throw err;
-        console.log("chatbot created successfully ✅"); //! remove later
+
+        // console.log(logData);
         const upsert = await query(formData, id);
-        //   console.log(upsert);
 
         res.status(201).send({
           chatbotId: id,
           chatbotName: name,
-          upsertStatus: upsert,
+          upsertStatus: upsert.status,
         });
+        // delete file
+        let deleteStatus = false;
         fs.unlink(filePath, (err) => {
           if (err) {
             console.error("Error deleting file:", err);
             return;
           }
-          console.log("File deleted successfully");
+          deleteStatus = true;
         });
+        
+
+        const logData = {
+          message: `chatbot created successfully ✅`,
+          route: "/api/v1/create-chatbot-weavi",
+          createdDate: formatedDate,
+          chatbotId: id,
+          chatbotName: name,
+          userId: userId,
+          upsertStatus: upsert.status,
+          weaviateIndex: upsert.weaviateIndex,
+          fileDeleted: deleteStatus,
+          chatbotLink: `${process.env.CHATBOT_BASE_URL}/canvas/${id}`,
+        };
+        console.log(logData);
       });
     } catch (error) {
       console.error(error);
-      res.status(500).send("Error retrieving chat flow data");
+      res.status(500).send("❌ Error retrieving chat flow data");
     }
   }
 );
