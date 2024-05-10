@@ -8,7 +8,7 @@ import { generateRandomName } from "../utils/helpers.js";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
-import FormData from "form-data"; 
+import FormData from "form-data";
 
 const formData = new FormData();
 const router = express.Router();
@@ -31,11 +31,11 @@ const storage = multer.diskStorage({
     cb(null, filename); // Unique filename
   },
 });
-const upload = multer({ storage: storage, fileFilter: fileFilter});
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 // Endpoint to create chatbot, upload files, and upsert them
 router.post(
-  "/create-chatbot-weavi-2/:userId",
+  "/create-chatbot-weavi/:userId",
   upload.array("files"),
   async (req, res) => {
     if (!req.files || req.files.length === 0) {
@@ -44,11 +44,11 @@ router.post(
 
     const userId = req.params.userId;
     console.log(`userid: ${userId}`);
-    console.log(chalk.bgMagenta("POST /api/v1/create-chatbot-weavi"));
+    console.log(chalk.bgMagenta("POST /api/v1/create-chatbot-weavi-dakjsdkjasbd"));
 
     const id = uuidv4();
-    const lastThreeDigit = id.slice(-3);
-    const name = lastThreeDigit + "_eventos";
+    const last5Digits = id.slice(-5);
+    const name = `eventos_bot_${last5Digits}`;
     const createdDate = new Date();
     const formatedDate = moment(createdDate).format(
       "YYYY-MM-DD HH:mm:ss.SSSSSS"
@@ -60,10 +60,10 @@ router.post(
         "https://chatbot-train.keoscx.com/api/v1/template-chatbots-wevi"
       );
       const results = response.data;
-      
+
       // Update chat flow data with unique index
       const parsedJSON = JSON.parse(results[0].flowData);
-      const indexTag = generateRandomName();
+      const indexTag = name
       parsedJSON.nodes.forEach((node) => {
         if (node.id === "weaviate_0") {
           node.data.inputs.weaviateIndex = indexTag;
@@ -71,7 +71,7 @@ router.post(
         }
       });
       const modifiedFlowdata = JSON.stringify(parsedJSON, null, 2);
-      const modifiedCategory = "weaviate";
+      const modifiedCategory = "eventos-bot-txtFile-wevi-mul";
 
       // Prepare chatbot data
       const newChatFlow = {
@@ -102,24 +102,27 @@ router.post(
         console.log("Chatbot created successfully ✅");
 
         // Get all files in the uploads directory
-        const uploadFolderPath = "/home/luisflr/chatbot-train-api/src/routes/uploads/";
+        const uploadFolderPath =
+          "/home/luisflr/chatbot-train-api/src/routes/uploads/";
         const files = await getAllFilesInDirectory(uploadFolderPath);
 
         // Upsert each file into the chatbot
-        const upsertStatus = await Promise.all(files.map(async (filename) => {
-          const filePath = path.join(uploadFolderPath, filename);
+        const upsertStatus = await Promise.all(
+          files.map(async (filename) => {
+            const filePath = path.join(uploadFolderPath, filename);
 
-          // Create FormData with the file
-          const formData = new FormData();
-          formData.append("files", fs.createReadStream(filePath));
-          formData.append("openAIApiKey", process.env.OPENAI_API_KEY);
-          formData.append("stripNewLines", "true");
-          formData.append("batchSize", 1);
+            // Create FormData with the file
+            const formData = new FormData();
+            formData.append("files", fs.createReadStream(filePath));
+            formData.append("openAIApiKey", process.env.OPENAI_API_KEY);
+            formData.append("stripNewLines", "true");
+            formData.append("batchSize", 1);
 
-          // Upsert the file into the chatbot
-          console.log("Upserting file:", filename);
-          return await upsertFile(formData, id);
-        }));
+            // Upsert the file into the chatbot
+            console.log("Upserting file:", filename);
+            return await upsertFile(formData, id);
+          })
+        );
 
         console.log("All files upserted successfully");
 
@@ -131,8 +134,21 @@ router.post(
         res.status(201).send({
           chatbotId: id,
           chatbotName: name,
-          upsertStatus: upsertStatus,
+          upsertStatus: 200,
         });
+        const logData = {
+          message: `chatbot created successfully ✅`,
+          route: "/api/v1/create-chatbot-weavi",
+          createdDate: formatedDate,
+          chatbotId: id,
+          chatbotName: name,
+          userId: userId,
+          upsertStatus: 200,
+          weaviateIndex: indexTag,
+          // fileDeleted: deleteStatus,
+          chatbotLink: `${process.env.CHATBOT_BASE_URL}/canvas/${id}`,
+        };
+        console.log(logData);
       });
     } catch (error) {
       console.error(error);
