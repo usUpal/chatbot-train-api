@@ -4,7 +4,9 @@ import chalk from 'ansi-colors'
 const router = express.Router();
 
 router.get("/template-chatbots-wevi", (req, res) => {
-  console.log(chalk.bgMagenta("GET /api/v1/template-chatbots"));
+  console.log(
+    chalk.blue(`GET /api/v1/template-chatbots-wevi ${chalk.gray(new Date().toISOString())}`)
+  );
   // "SELECT * FROM chat_flow WHERE name LIKE 'weaviate-final-demo' OR name LIKE 'Merck Januvia QA' OR name LIKE 'keos-test';";
   const sql =
     "SELECT * FROM chat_flow WHERE name LIKE 'template-chatbot-weaviate';";
