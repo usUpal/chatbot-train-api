@@ -38,13 +38,16 @@ router.post(
   "/create-chatbot-weavi/:userId",
   upload.array("files"),
   async (req, res) => {
+    console.log(
+      chalk.blue(`GET /api/v1/create-chatbot-weavi/ ${chalk.gray(new Date().toISOString())}`)
+    );
+
     if (!req.files || req.files.length === 0) {
       return res.status(400).send("No files uploaded.");
     }
 
     const userId = req.params.userId;
-    console.log(`userid: ${userId}`);
-    console.log(chalk.bgMagenta("POST /api/v1/create-chatbot-weavi-dakjsdkjasbd"));
+    // console.log(`userid: ${userId}`);
 
     const id = uuidv4();
     const last5Digits = id.slice(-5);
@@ -63,11 +66,11 @@ router.post(
 
       // Update chat flow data with unique index
       const parsedJSON = JSON.parse(results[0].flowData);
-      const indexTag = name
+      const indexTag = `Eventos_bot_${last5Digits}`
       parsedJSON.nodes.forEach((node) => {
         if (node.id === "weaviate_0") {
           node.data.inputs.weaviateIndex = indexTag;
-          console.log("Updated weaviateIndex:", node.data.inputs.weaviateIndex);
+          // console.log("Updated weaviateIndex:", node.data.inputs.weaviateIndex);
         }
       });
       const modifiedFlowdata = JSON.stringify(parsedJSON, null, 2);
@@ -99,12 +102,12 @@ router.post(
           res.status(500).send("Error creating chatbot");
           return;
         }
-        console.log("Chatbot created successfully ✅");
 
         // Get all files in the uploads directory
         const uploadFolderPath =
           "/home/luisflr/chatbot-train-api/src/routes/uploads/";
         const files = await getAllFilesInDirectory(uploadFolderPath);
+        const fileNames = []
 
         // Upsert each file into the chatbot
         const upsertStatus = await Promise.all(
@@ -119,17 +122,23 @@ router.post(
             formData.append("batchSize", 1);
 
             // Upsert the file into the chatbot
-            console.log("Upserting file:", filename);
+            fileNames.push(filename);
             return await upsertFile(formData, id);
           })
         );
 
-        console.log("All files upserted successfully");
+        // console.log("All files upserted successfully",fileNames);
 
         // Delete all files in the uploads folder
         await deleteAllFiles(uploadFolderPath);
 
-        console.log("All files deleted from the uploads folder");
+        // try {
+        //   const message = await deleteAllFiles(uploadFolderPath);
+        //   console.log("deleted");
+        // } catch (error) {
+        //   console.error("Deletion failed:", error);
+        // }
+        
 
         res.status(201).send({
           chatbotId: id,
@@ -142,9 +151,10 @@ router.post(
           createdDate: formatedDate,
           chatbotId: id,
           chatbotName: name,
-          userId: userId,
+          userId: userId, 
           upsertStatus: 200,
           weaviateIndex: indexTag,
+          fileNames: fileNames,
           // fileDeleted: deleteStatus,
           chatbotLink: `${process.env.CHATBOT_BASE_URL}/canvas/${id}`,
         };
