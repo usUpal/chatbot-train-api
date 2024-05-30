@@ -14,12 +14,14 @@ router.post("/create-chatbot-sys/:userId", async (req, res) => {
     )
   );
   const userId = req.params.userId ? req.params.userId : 89;
+  console.log(typeof userId)
 
   const id = uuidv4();
   const last5Digits = id.slice(-5);
   const name = `eventos_bot_${last5Digits}`;
   const createdDate = new Date();
   const formatedDate = moment(createdDate).format("YYYY-MM-DD HH:mm:ss.SSSSSS");
+  console.log(typeof formatedDate)
 
   const systemPrompt =
     req.body.bot_text || "you are a chatbot name keosbot bot";

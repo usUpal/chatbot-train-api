@@ -14,6 +14,9 @@ import mergedTrainRoute from "./routes/mergedTrainRoute.js";
 import templateChatbotWeviRoute from "./routes/templateChatbotWeviRoute.js";
 import templateChatbotSysRoute from "./routes/templateChatbotSysRoute.js";
 import multiFileUpsertRoute from "./routes/multiFileUpsertRoute.js";
+import chatbotRetrainSys from "./routes/chatbotRetrainSys.js";
+// import chatbotRetrainSys from "./routes/chatbotRetrainSys.js"
+import retriveChatbot from "./routes/retriveChatbot.js";
 
 
 const app = express();
@@ -39,6 +42,8 @@ app.use("/api/v1", userChatbotListRoute);
 app.use("/api/v1", deleteChatbotRoute);
 app.use("/api/v1", mergedTrainRoute);
 app.use("/api/v1", multiFileUpsertRoute);
+app.use("/api/v1", chatbotRetrainSys);
+app.use("/api/v1", retriveChatbot);
 
 
 
