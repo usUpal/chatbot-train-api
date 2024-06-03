@@ -41,7 +41,7 @@ router.post("/create-chatbot-sys/:userId", async (req, res) => {
     // Modify the value of systemMessage
     parsedJSON.nodes.forEach((node) => {
       if (node.id === "openAIFunctionAgent_0") {
-        node.data.inputs.systemMessage = `you are a helpful chatbot name keosbot & you will answer the questions based on these informations. the infos are === ${systemPrompt} ===; don't answer any other questions outside of this topic;`;
+        node.data.inputs.systemMessage = `You are a chatbot. answer ques based on these infos:${systemPrompt}`;
       }
     });
 

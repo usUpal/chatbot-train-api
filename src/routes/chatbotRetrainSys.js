@@ -14,6 +14,7 @@ router.put("/retrain-sys", async (req, res) => {
     )
   );
  const {bot_id, status, bot_text, userId}= req.body;
+ console.log(bot_id,status,bot_text,userId)
 
   const createdDate = new Date();
   const formatedDate = moment(createdDate).format("YYYY-MM-DD HH:mm:ss.SSSSSS");
@@ -58,7 +59,6 @@ router.put("/retrain-sys", async (req, res) => {
     const modifiedCategory = "eventos-bot-sys";
 
     const sql2 = `UPDATE chat_flow SET flowData = '${modifiedFlowdata}' WHERE id LIKE '${bot_id}';`;
-    console.log(`#{sql2}`)
 
 
 

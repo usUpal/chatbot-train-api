@@ -15,6 +15,7 @@ import templateChatbotWeviRoute from "./routes/templateChatbotWeviRoute.js";
 import templateChatbotSysRoute from "./routes/templateChatbotSysRoute.js";
 import multiFileUpsertRoute from "./routes/multiFileUpsertRoute.js";
 import chatbotRetrainSys from "./routes/chatbotRetrainSys.js";
+import chatbotRetrainTxt from "./routes/chatbotRetrainTxt.js";
 // import chatbotRetrainSys from "./routes/chatbotRetrainSys.js"
 import retriveChatbot from "./routes/retriveChatbot.js";
 
@@ -43,6 +44,7 @@ app.use("/api/v1", deleteChatbotRoute);
 app.use("/api/v1", mergedTrainRoute);
 app.use("/api/v1", multiFileUpsertRoute);
 app.use("/api/v1", chatbotRetrainSys);
+app.use("/api/v1", chatbotRetrainTxt);
 app.use("/api/v1", retriveChatbot);
 
 

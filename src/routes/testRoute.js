@@ -1,14 +1,31 @@
 import express from "express";
-import bodyParser from "body-parser";
-const app = express();
-app.use(express.json());
-// const router = express.Router();
+import chalk from "ansi-colors";
+import multer from "multer";
 
-app.post("/test", (req, res) => {
-    console.log("POST /api/v1/test");
-    console.log(req.body.bot_text)
-    res.status(200).json({ message: "Hello from test route" });
+const app = express();
+
+// Configure multer
+const storage = multer.memoryStorage(); // Store file in memory (alternatively, you can store it on disk)
+const upload = multer({ storage });
+
+app.put("/test", upload.single('file'), (req, res) => {
+    console.log(
+        chalk.blue(
+          `PUT /test ${chalk.gray(new Date().toISOString())}`
+        )
+    );
+
+    // Log the text fields
+    console.log(req.body);
+
+    // Log the file information
+    if (req.file) {
+        console.log(`Received file: ${req.file.originalname}`);
+    } else {
+        console.log('No file received');
+    }
+
+    res.status(200).json({ message: req.body });
 });
 
-// app.use('/', router);
 export default app;
