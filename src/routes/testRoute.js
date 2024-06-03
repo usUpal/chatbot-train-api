@@ -8,7 +8,7 @@ const app = express();
 const storage = multer.memoryStorage(); // Store file in memory (alternatively, you can store it on disk)
 const upload = multer({ storage });
 
-app.put("/test", upload.single('file'), (req, res) => {
+app.post("/test", upload.single('file'), (req, res) => {
     console.log(
         chalk.blue(
           `PUT /test ${chalk.gray(new Date().toISOString())}`
